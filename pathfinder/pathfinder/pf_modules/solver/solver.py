@@ -28,6 +28,9 @@ def sum_lists(t1, t2):
         v.append(t1[i] + t2[i])
     return tuple(v)
 
+def reconstruct_path():
+    return True
+
 def A(array, c1, c2, vx):
     # initial setup
     sh = c1[0]
