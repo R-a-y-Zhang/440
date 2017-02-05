@@ -9,7 +9,7 @@ def generate_obstacles(arr, v, fill):
     width = len(array[0])
     pick_cnt = height*width*fill
     i = 0
-    while i < v:
+    while i < pick_cnt:
         w = random.randint(0, width-1)
         h = random.randint(0, height-1)
         if (array[h][w] != v):
@@ -43,7 +43,7 @@ def generate_hards(arr, cnt, hard_w, hard_h, v):
                 for j in range(hard_w):
                     sw = j + w
                     if (check_bounds(0, width, sw)):
-                        array[sh][sw] += v
+                        array[sh][sw] = v
     return array
 
 def generate_rivers(array, v): # to be implemented
