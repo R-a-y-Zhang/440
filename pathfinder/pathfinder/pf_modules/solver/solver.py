@@ -12,48 +12,65 @@ class node:
             return True
         return False
 
+class data:
+    def __init__(self, data=None, prev=None, next_=None):
+        self.data = data
+        self.prev = prev
+        self.next = next_
+    def match(self, data):
+        if self.data == data:
+            return True
+
 class PriorityQueue:
     def __init__(self):
-        self.heap = [None]
+        self.heap = []
         self.length = 0
-    def length(self):
-        return self.length
+
     def insert(self, node):
-        self.heap.append(node)
+        if self.length != 0:
+            inc = 10
+            j = 0
+            while True:
+                i = j*inc
+                if i < self.length:
+                    if self.heap[i].data > node.data: # node in heap is greater than node, thus node is in front
+                        if inc == 10:
+                            inc = 1
+                            j = 0
+                        else:
+                            self.heap[i].prev = node
+                            node.next = self.heap[i]
+                            self.heap[i].next = node
+                            node.prev = self.heap[i]
+                            self.heap.insert(i, node)
+                            break
+                    j += inc
+                else:
+                    if inc == 10:
+                        j -= inc
+                        inc = 1
+                    else:
+                        break
+        else:
+            self.heap.append(node)
         self.length += 1
-        pindex = self.length() / 2
-        cindex = self.length()
-        while pindex != 0:
-            if self.heap[pindex].g+self.heap[pindex].h < node.g+node.h:
-                n = self.heap[pindex]
-                self.heap[pindex] = node
-                self.heap[cindex] = n
-                cindex = pindex
-                pindex = cindex/2
-            else:
-                break
+    
+    def get_min(self):
+        self.heap[1].prev = None
+        return self.heap.pop(0)
 
-    def pop(self):
-        n = self.heap[1]
-        self.heap[1] = self.heap[self.length()]
-        self.length -= 1
-        pi = 1
-        ci1 = pi*2
-        ci2 = pi*2+1
-        while pi < self.length():
-            gh1 = self.heap[ci1].g + self.heap[ci1].h
-            gh2 = self.heap[ci2].g + self.heap[ci2].h
-            ci = ci1 if gh1 < gh2 else ci2
-            gh = gh1 if gh1 < gh2 else gh2
-            if self.heap[pi].g+self.heap[pi].h < gh:
-                n = self.heap[ci]
-                self.heap[ci] = self.heap[pi]
-                self.heap[pi] = n
-                pi = ci
-            else:
-                break
+    def find(self, data):
+        for i in range(self.length):
+            if self.heap[i].match(data):
+                return i
+        return -1
 
-
+def testQueue():
+    p = PriorityQueue()
+    a = [5, 1,2, 5, 1, 3, 34, 7, 2, 1, 2, 6, 3, 1, 2, 100]
+    for i in a:
+        p.insert(data(i))
+    
 def in_bounds(array, c, bh, bw, v):
     if c[0] < 0 or c[0] >= bh or c[1] < 0 or c[1] >= bw:
         return False
@@ -89,6 +106,7 @@ def find(set_, c):
             return i
 
 def aStarSolve(array, start, end):
+    # testQueue()
     openSet = []
     opens = []
     closedSet = []
@@ -120,7 +138,7 @@ def aStarSolve(array, start, end):
                 pathList = [nc.c]
                 while nc.p != None:
                     nc = nc.p
-                    pathList.insert(0, nc.c)
+                    pathList.insert(0, [nc.c[0], nc.c[1]])
                 pathList.append(end)
                 return pathList
             if n in closedSet:

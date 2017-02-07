@@ -1,0 +1,7 @@
+This has not been completed. It will take a bit of work before it can run.
+What has been completed, however, is an A* implementation that can solve a
+120x180 grid in under 40 seconds (on a 4.0GHz processor, mileage may vary)
+and a rudimentary visualization of the map and the path the algorithm took.
+It isn't interactive yet, and there is still some tweaking that needs to be
+done to make the implementation faster and more efficient but right now,
+that's what is up.
