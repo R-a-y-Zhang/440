@@ -104,7 +104,12 @@ def find(set_, c):
     for i in range(len(set_)):
         if set_[i].c == c:
             return i
-
+def find_min(openSet):
+            chc = openSet[0]
+            for c in openSet:
+                if c.h+c.g < chc.h+chc.g:
+                    chc = c
+            return chc
 def aStarSolve(array, start, end):
     # testQueue()
     openSet = []
@@ -117,13 +122,7 @@ def aStarSolve(array, start, end):
     opens.append(current.c)
     neighborOffsets = [(1,0), (1,1), (0,1), (-1,0), (-1,1), (-1,-1), (1,-1), (0,-1)]
     while openSet:
-        def find_min():
-            chc = openSet[0]
-            for c in openSet:
-                if c.h+c.g < chc.h+chc.g:
-                    chc = c
-            return chc
-        current = find_min()
+        current = find_min(openSet)
         openSet.remove(current)
         cc = current.c
         opens.remove(cc)

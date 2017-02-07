@@ -1,6 +1,6 @@
 import sys, os
 import random as rand
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 
 sys.path.append(os.path.join(os.path.dirname("."), "pf_modules"))
 
@@ -15,17 +15,31 @@ array = [[]]
 
 @app.route('/')
 def run():
+    width = request.args.get("width")
+    height = request.args.get('height')
+    o_width = request.args.get("o_width")
+    o_height = request.args.get("o_height")
+    o_count = request.args.get("o_count")
+    print(width, height)
     global path
-    w = 120
-    h = 160
     global array
+    w = int(width) if width and width.strip() != "" else 0
+    h = int(height) if height and height.strip() != "" else 0
+    ow = int(o_width) if o_width and o_width.strip() != "" else 0
+    oh = int(o_height) if o_height and o_height.strip() != "" else 0
+    oc = int(o_count) if o_count and o_count.strip() != "" else 0
+    if not w or not h:
+        path = [[]]
+        array = [[]]
+        return render_template('index.html')
+
     array = setup.init_board(w, h, 1)
-    array = setup.generate_obstacles(setup.generate_hards(array, 8, 31, 31, 2), 3, 0.2)
-    r1_w = rand.randint(0, 10)
-    r1_h = rand.randint(0, 10)
+    array = setup.generate_obstacles(setup.generate_hards(array, oc, ow, oh, 2), 3, 0.2)
+    r1_w = rand.randint(0, 20)
+    r1_h = rand.randint(0, 20)
     print("START", r1_h, r1_w)
-    r2_w = rand.randint(w-10, w-1)
-    r2_h = rand.randint(h-10, h-1)
+    r2_w = rand.randint(w-20, w-1)
+    r2_h = rand.randint(h-20, h-1)
     print("END", r2_h, r2_w)
     path = solver.aStarSolve(array, (r1_h, r1_w), (r2_h, r2_w))
     '''
@@ -47,6 +61,10 @@ def run():
 
 @app.route("/main.js")
 def get_mainjs():
+    global array
+    global path
+    if not path:
+        path = [[]]
     return render_template("main.js", rows=array, path=path)
 
 app.run(debug=True)

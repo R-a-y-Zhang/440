@@ -6,7 +6,39 @@
 		  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
 		  crossorigin="anonymous"></script> 
         <script src="main.js"></script>
+        <style>
+            body {
+                display: flex;
+                flex-flow: column;
+            }
+
+            #options {
+                display: flex;
+                flex-flow: row;
+                width: 100%;
+            }
+            
+            input, button {
+                width: 100px;
+                margin: 10px;
+                height: 30px;
+            }
+        </style>
     </head>
     <body>
+        <div id='options'>
+            <p class='label'> Height </p>
+            <input type='text' id='height'> 
+            <p class='label'> Width </p>
+            <input type='text' id='width'>
+            <p class='label'> Obstacle count </p>
+            <input type='text' id='o-count'>
+            <p class='label'> Obstacle Width </p>
+            <input type='text' id='o-width'>
+            <p class='label'> Obstacle Height </p>
+            <input type='text' id='o-height'>
+            <button type='button' id='confirm'> Confirm </button>
+        </div>
+        </div>
         <canvas id="canvas" style="width: 100%; height: 100%;"></canvas>
 </html>
