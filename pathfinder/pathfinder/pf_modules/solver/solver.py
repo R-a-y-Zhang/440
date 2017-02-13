@@ -1,6 +1,7 @@
 from math import sqrt
+from . import datastore as DS
 
-class node:
+class CNode:
     # g = travel cost from start, h = heuristic cost
     def __init__(self, c, h, g, p):
         self.c = c
@@ -12,64 +13,8 @@ class node:
             return True
         return False
 
-class data:
-    def __init__(self, data=None, prev=None, next_=None):
-        self.data = data
-        self.prev = prev
-        self.next = next_
-    def match(self, data):
-        if self.data == data:
-            return True
-
-class PriorityQueue:
-    def __init__(self):
-        self.heap = []
-        self.length = 0
-
-    def insert(self, node):
-        if self.length != 0:
-            inc = 10
-            j = 0
-            while True:
-                i = j*inc
-                if i < self.length:
-                    if self.heap[i].data > node.data: # node in heap is greater than node, thus node is in front
-                        if inc == 10:
-                            inc = 1
-                            j = 0
-                        else:
-                            self.heap[i].prev = node
-                            node.next = self.heap[i]
-                            self.heap[i].next = node
-                            node.prev = self.heap[i]
-                            self.heap.insert(i, node)
-                            break
-                    j += inc
-                else:
-                    if inc == 10:
-                        j -= inc
-                        inc = 1
-                    else:
-                        break
-        else:
-            self.heap.append(node)
-        self.length += 1
-    
-    def get_min(self):
-        self.heap[1].prev = None
-        return self.heap.pop(0)
-
-    def find(self, data):
-        for i in range(self.length):
-            if self.heap[i].match(data):
-                return i
-        return -1
-
 def testQueue():
-    p = PriorityQueue()
-    a = [5, 1,2, 5, 1, 3, 34, 7, 2, 1, 2, 6, 3, 1, 2, 100]
-    for i in a:
-        p.insert(data(i))
+    d = DS()
     
 def in_bounds(array, c, bh, bw, v):
     if c[0] < 0 or c[0] >= bh or c[1] < 0 or c[1] >= bw:
@@ -110,20 +55,20 @@ def find_min(openSet):
                 if c.h+c.g < chc.h+chc.g:
                     chc = c
             return chc
-def aStarSolve(array, start, end):
-    # testQueue()
-    openSet = []
+def aStarSolve(array, start, end, heuristic_fn):
+    openSet = DS.Datastore()
     opens = []
     closedSet = []
     height = len(array)
     width = len(array[0])
-    current = node(start, manhattan(start, end), 0, None)
-    openSet.append(current)
+    current = CNode(start, heuristic_fn(start, end), 0, None)
+    openSet.insert(DS.Node(current, current.g+current.h))
+    print(openSet.length)
     opens.append(current.c)
     neighborOffsets = [(1,0), (1,1), (0,1), (-1,0), (-1,1), (-1,-1), (1,-1), (0,-1)]
-    while openSet:
-        current = find_min(openSet)
-        openSet.remove(current)
+    while openSet.length > 0:
+        node = openSet.pop()
+        current = node.data
         cc = current.c
         opens.remove(cc)
         closedSet.append(cc)
@@ -144,13 +89,24 @@ def aStarSolve(array, start, end):
                 continue
             tval = current.g + calculate_travel(cc, n, array[cc[0]][cc[1]], array[n[0]][n[1]])
             if n in opens:
-                nnode = openSet[find(openSet, n)] # finds the node in the openSet
-                # calculating travel cost from the start to that cell
+                ind = -1
+                for i in range(1, openSet.length+1):
+                    if openSet.heap[i].data.c[0] == n[0] and openSet.heap[i].data.c[1] == n[1]:
+                        ind = i
+                        break
+
+                nodeTup = openSet.heap[ind]
+                nnode = nodeTup.data
+               # calculating travel cost from the start to that cell
                 if tval < nnode.g: # if travel cost is better, update
                     nnode.g = tval
                     nnode.p = current
+                    nodeTup.value = nnode.g + nnode.h
+                    openSet.heapify(ind)
             else: # is not in the openSet
-                nnode = node(n, manhattan(start, n), tval, current)
-                openSet.append(nnode)
+                nnode = CNode(n, heuristic_fn(start, n), tval, current)
+                if n[0] == 20 or n[1] == 20:
+                    print("EXCEEDS")
+                openSet.insert(DS.Node(nnode, nnode.g+nnode.h))
                 opens.append(n)
-    print("END OO", len(openSet))
+    print("NONE")

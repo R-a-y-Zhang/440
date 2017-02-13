@@ -35,13 +35,13 @@ def run():
 
     array = setup.init_board(w, h, 1)
     array = setup.generate_obstacles(setup.generate_hards(array, oc, ow, oh, 2), 3, 0.2)
-    r1_w = rand.randint(0, 20)
-    r1_h = rand.randint(0, 20)
+    r1_w = rand.randint(0, 5)
+    r1_h = rand.randint(0, 5)
     print("START", r1_h, r1_w)
-    r2_w = rand.randint(w-20, w-1)
-    r2_h = rand.randint(h-20, h-1)
+    r2_w = rand.randint(w-10, w-1)
+    r2_h = rand.randint(h-10, h-1)
     print("END", r2_h, r2_w)
-    path = solver.aStarSolve(array, (r1_h, r1_w), (r2_h, r2_w))
+    path = solver.aStarSolve(array, (r1_h, r1_w), (r2_h, r2_w), solver.manhattan)
     '''
     for h in range(len(array)):
         for v in range(len(array[0])):
