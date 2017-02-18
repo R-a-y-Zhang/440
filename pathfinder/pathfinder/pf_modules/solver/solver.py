@@ -29,6 +29,12 @@ def sum_tuples(t1, t2):
 def manhattan(c1, c2):
     return abs(c1[0] - c2[0]) + abs(c1[1] + c2[1])
 
+def uniform_cost(c1, c2):
+    return 0
+
+def weighted_manhattan(c1, c2):
+    return manhattan(c1, c2)*2
+
 def calculate_travel(c1, c2, c1v, c2v):
     deltaH = c1[0] - c2[0]
     deltaW = c1[1] - c2[1]
@@ -55,23 +61,24 @@ def find_min(openSet):
                 if c.h+c.g < chc.h+chc.g:
                     chc = c
             return chc
+
+neighborOffsets = [(1,0), (1,1), (0,1), (-1,0), (-1,1), (-1,-1), (1,-1), (0,-1)]
+
 def aStarSolve(array, start, end, heuristic_fn):
     openSet = DS.Datastore()
-    opens = []
-    closedSet = []
+    opens = set()
+    closedSet = set()
     height = len(array)
     width = len(array[0])
     current = CNode(start, heuristic_fn(start, end), 0, None)
     openSet.insert(DS.Node(current, current.g+current.h))
-    print(openSet.length)
-    opens.append(current.c)
-    neighborOffsets = [(1,0), (1,1), (0,1), (-1,0), (-1,1), (-1,-1), (1,-1), (0,-1)]
+    opens.add(current.c)
     while openSet.length > 0:
         node = openSet.pop()
         current = node.data
         cc = current.c
         opens.remove(cc)
-        closedSet.append(cc)
+        closedSet.add(cc)
         if current.c is end:
             return True
         neighbors = list(filter(lambda n: in_bounds(array, n, height, width, 3),
@@ -94,7 +101,6 @@ def aStarSolve(array, start, end, heuristic_fn):
                     if openSet.heap[i].data.c[0] == n[0] and openSet.heap[i].data.c[1] == n[1]:
                         ind = i
                         break
-
                 nodeTup = openSet.heap[ind]
                 nnode = nodeTup.data
                # calculating travel cost from the start to that cell
@@ -105,8 +111,50 @@ def aStarSolve(array, start, end, heuristic_fn):
                     openSet.heapify(ind)
             else: # is not in the openSet
                 nnode = CNode(n, heuristic_fn(start, n), tval, current)
-                if n[0] == 20 or n[1] == 20:
-                    print("EXCEEDS")
                 openSet.insert(DS.Node(nnode, nnode.g+nnode.h))
-                opens.append(n)
+                opens.add(n)
     print("NONE")
+
+def multiAStar(array, start, end, heuristics):
+    hlen = len(heuristics)
+    heuristics.insert(manhattan, 0)
+    openSets = []
+    openCells = []
+    closedSet = []
+    # initializing all heuristics including root
+    for heuristic in heuristics:
+        oSet = DS.Datastore()
+        current = CNode(start, heuristic(start, end), 0, None)
+        oSet.insert(DS.Node(current, current.g+current.h))
+        if start not in openCells:
+            openCells.append(start)
+        openSets.append(oSet)
+        openCells.append(set())
+        closedSet.append(set())
+    while heuristics[0].length > 0:
+        dCel = heuristics[0].pop().data
+        dV = dCel.g + dCel.h
+        neighbors = list(filter(lambda n: in_bounds(array, n, height, width, 3),
+            [sum_tuples(dCel.c, n) for n in neighborOffsets]))
+        for n in neighbors:
+            if n in closedSet[0]:
+                pass
+            elif:
+                cc = dCel.c
+                tval = dCel.g + calculate_travel(cc, n, array[cc[0]][cc[1]], array[n[0]][n[1]])
+                nnode = CNode(n, heuristic[0](start, n), tval, dCel)
+                openSets[0].insert(DS.Node(nnode, nnode.g+nnode.h))
+                openCells[0].add(n)
+            for i in range(1, hlen):
+                hCell = heuristics[i].pop().data
+                if hCell.c in openCells[i]:
+                    continue
+                neighbors = list(filter(lambda n: in_bounds(array, n, height, width, 3),
+                    [sum_tuples(hCell.c, n), for n in neighborOffsets]))
+                for n in neighbors:
+                cc = hCell.c
+                tval = dCel.g + calculate_travel(cc, n, array[cc[0]][cc[1]], array[n[0]][n[1]])
+                nnode = CNode(n, heuristic[i](start, n), tval, hCell)
+                openSets[i].insert(DS.Node(nnode, nnode.g+nnode.h))
+                openCells[i].add(n)
+
