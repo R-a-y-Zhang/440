@@ -116,45 +116,136 @@ def aStarSolve(array, start, end, heuristic_fn):
     print("NONE")
 
 def multiAStar(array, start, end, heuristics):
-    hlen = len(heuristics)
+    height = len(array)
+    width = len(array[0])
     heuristics.insert(manhattan, 0)
     openSets = []
-    openCells = []
-    closedSet = []
-    # initializing all heuristics including root
-    for heuristic in heuristics:
-        oSet = DS.Datastore()
-        current = CNode(start, heuristic(start, end), 0, None)
-        oSet.insert(DS.Node(current, current.g+current.h))
-        if start not in openCells:
-            openCells.append(start)
-        openSets.append(oSet)
-        openCells.append(set())
-        closedSet.append(set())
-    while heuristics[0].length > 0:
-        dCel = heuristics[0].pop().data
-        dV = dCel.g + dCel.h
-        neighbors = list(filter(lambda n: in_bounds(array, n, height, width, 3),
-            [sum_tuples(dCel.c, n) for n in neighborOffsets]))
-        for n in neighbors:
-            if n in closedSet[0]:
-                pass
-            elif:
-                cc = dCel.c
-                tval = dCel.g + calculate_travel(cc, n, array[cc[0]][cc[1]], array[n[0]][n[1]])
-                nnode = CNode(n, heuristic[0](start, n), tval, dCel)
-                openSets[0].insert(DS.Node(nnode, nnode.g+nnode.h))
-                openCells[0].add(n)
-            for i in range(1, hlen):
-                hCell = heuristics[i].pop().data
-                if hCell.c in openCells[i]:
+    closedSets = []
+    scell = start
+    for h in range(len(heuristics)):
+        openSet.append(DS.Datastore())
+        snode = CNode(start, heuristics[h](start, end), 0, None)
+        openSet[h].insert(snode)
+        closedSets.append(set())
+    nonZeros = len(openSets)
+    baseVal = -1
+    while nonZeros > 0:
+        for i in range(len(openSets)):
+            openSet = openSets[i]
+            closedSet = closedSets[i]
+            if openSet.length <= 0:
+                nonZeros -= 1
+                continue
+            # peeks at the node to fetch, if the g+h value is less than that of the base heuristic, then
+            # continue. else, wait until the next round.
+            minnode = openSet.peek().data
+            if i == 0:
+                baseVal = minnode.g + minnode.h
+            else:
+                if baseVal < 0:
                     continue
-                neighbors = list(filter(lambda n: in_bounds(array, n, height, width, 3),
-                    [sum_tuples(hCell.c, n), for n in neighborOffsets]))
-                for n in neighbors:
-                cc = hCell.c
-                tval = dCel.g + calculate_travel(cc, n, array[cc[0]][cc[1]], array[n[0]][n[1]])
-                nnode = CNode(n, heuristic[i](start, n), tval, hCell)
-                openSets[i].insert(DS.Node(nnode, nnode.g+nnode.h))
-                openCells[i].add(n)
+                # if heuristic is better than the base heurisitc, keep iterating over heuristics
+                elif baseVal < minnode.g+minnode.h: 
+                    i = 0
+                    continue
+            # continue if only h+g is better than the base heuristic or if is base heuristic.
+            # Then just standard A* on it
+            node = openSet.pop()
+            current = node.data
+            cc = current.c
+            opens.remove(cc)
+            closedSet.add(cc)
+            if current.c is end:
+                return True
+            neighbors = list(filter(lambda n: in_bounds(array, n, height, width, 3),
+                [sum_tuples(cc, n) for n in neighborOffsets]))
+            for n in neighbors: # n, tuple of the coordinates of the neighbor
+                if n == end:
+                    nc = current
+                    pathList = [nc.c]
+                    while nc.p != None:
+                        nc = nc.p
+                        pathList.insert(0, [nc.c[0], nc.c[1]])
+                    pathList.append(end)
+                    return pathList
+                if n in closedSet:
+                    continue
+                tval = current.g + calculate_travel(cc, n, array[cc[0]][cc[1]], array[n[0]][n[1]])
+                if n in opens:
+                    ind = -1
+                    for j in range(1, openSet.length+1):
+                        if openSet.heap[j].data.c[0] == n[0] and openSet.heap[j].data.c[1] == n[1]:
+                            ind = j
+                            break
+                    nodeTup = openSet.heap[ind]
+                    nnode = nodeTup.data
+                   # calculating travel cost from the start to that cell
+                    if tval < nnode.g: # if travel cost is better, update
+                        nnode.g = tval
+                        nnode.p = current
+                        nodeTup.value = nnode.g + nnode.h
+                        openSet.heapify(ind)
+                else: # is not in the openSet
+                    nnode = CNode(n, heuristics[i](start, n), tval, current)
+                    openSet.insert(DS.Node(nnode, nnode.g+nnode.h))
+                    opens.add(n)
 
+def multiAStarMultiQueue(array, start, end, heuristics):
+    height = len(array)
+    width = len(array[0])
+    heuristics.insert(manhattan, 0)
+    openSets = []
+    opens = set()
+    closedSet = []
+    for i in range(len(heuristics)):
+        openSets.append(set())
+        snode = CNode(start, heuristics[i](start, end), 0, None)
+        openSets[i].insert(snode)
+        closedSet.append(start)
+    nonZeros = len(heuristics)
+    while nonZeros > 0:
+        cExpand = None
+        cExpandVal = -1
+        tset = openSets[0]
+        for i in range(len(openSets)):
+            pnode = openSets[i].peek().data
+            if i == 0: # if is base heuristic, set that as cExpandVal
+                cExpandVal = pnode.g + pnode.h
+            else:
+                if pnode.g + pnode.h < cExpandVal: # if less than base heuristic, set IA as new expansion
+                    cExpandVal = pnode.g + pnode.h
+                    tset = openSets[i]
+        current = cExpand.pop().data
+        cc = current.c
+        neighbors = list(filter(lambda n: in_bounds(array, n, height, width, 3),
+            [sum_tuples(cc, n) for n in neighborOffsets]))
+        for n in neighbors:
+            if n == end:
+                nc = current
+                pathList = [nc.c]
+                while nc.p != None:
+                    nc = nc.p
+                    pathList.insert(0, nc.c[0], nc.c[1]])
+                pathList.append(end)
+                return pathList
+            if n in closedSet:
+                continue
+            for i in range(len(openSets)):
+                tval = current.g + calculate_travel(cc, n, array[cc[0]][cc[1]], array[n[0]][n[1]])
+                if n in opens:
+                    ind = -1
+                    openSet = openSets[i]
+                    for j in range(1, openSet.length+1):
+                        if openSet.heap[j].data.c[0] == n[0] and openSet.heap[j].data.c[1] == n[1]:
+                            ind = j
+                            break
+                    nodeTup = openSet.heap[ind]
+                    nnode = nodeTup.data
+                    if tval < nnode.g:
+                        nnode.g = tval
+                        nnode.p = current
+                        nodeTup.value = nnode.g + nnode.h
+                else:
+                    nnode = CNode(n, heuristics[i](start, n), tval, current)
+                    openSet.insert(DS.Node(nnode, nnode.g+nnode.h))
+                    opens.add(n)
