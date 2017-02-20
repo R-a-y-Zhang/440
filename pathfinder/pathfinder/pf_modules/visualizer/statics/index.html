@@ -18,7 +18,7 @@
                 width: 100%;
             }
             
-            input, button {
+            input, button, select {
                 width: 100px;
                 margin: 10px;
                 height: 30px;
@@ -37,6 +37,14 @@
             <input type='text' id='o-width'>
             <p class='label'> Obstacle Height </p>
             <input type='text' id='o-height'>
+            <p class='algo_type'></p>
+            <select id='algo'>
+                <option value='a-star'> A star </option>
+                <option value='uniform'> Uniform Cost </option>
+                <option value='weighted a-star'> Weighted A-star </option>
+                <option value='a-multi-multi'> A star multi-heuristic multi-queue </option>
+                <option value='a-multi-single'> A start multi-heuristic single-queue </option>
+            </select>
             <button type='button' id='confirm'> Confirm </button>
         </div>
         </div>

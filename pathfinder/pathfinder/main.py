@@ -23,11 +23,14 @@ def run():
     print(width, height)
     global path
     global array
-    w = int(width) if width and width.strip() != "" else 0
-    h = int(height) if height and height.strip() != "" else 0
-    ow = int(o_width) if o_width and o_width.strip() != "" else 0
-    oh = int(o_height) if o_height and o_height.strip() != "" else 0
-    oc = int(o_count) if o_count and o_count.strip() != "" else 0
+    w = int(width) if width and width.strip() != "" else 160
+    h = int(height) if height and height.strip() != "" else 100
+    ow = int(o_width) if o_width and o_width.strip() != "" else 31
+    oh = int(o_height) if o_height and o_height.strip() != "" else 31
+    oc = int(o_count) if o_count and o_count.strip() != "" else 6
+    algo = request.args.get('algo')
+    if not algo:
+        algo = 'a-star'
     if not w or not h:
         path = [[]]
         array = [[]]
@@ -41,8 +44,21 @@ def run():
     r2_w = rand.randint(w-10, w-1)
     r2_h = rand.randint(h-10, h-1)
     print("END", r2_h, r2_w)
-    path = solver.multiAStarMultiQueue(array, (r1_h, r1_w), (r2_h, r2_w),
-            [solver.expManhattan, solver.solid, solver.sqrtManhattan])
+    path = None
+    def run_with_algo(algo, heurs):
+        return algo(array, (r1_h, r1_w), (r2_h, r2_w), heurs)
+
+    if algo == 'a-multi-single' or algo == 'a-multi-multi':
+        path = run_with_algo(solver.multiAStar if algo == 'a-multi-single' else solver.multiAStarMultiQueue,
+                [solver.manhattan, solver.weighted_manhattan, solver.sqrtManhattan,
+                    solver.crowFlies, solver.expManhattan])
+    else:
+        if algo == 'uniform':
+            path = run_with_algo(solver.aStarSolve, solver.uniform_cost)
+        elif algo == 'weighted':
+            path = run_with_algo(solver.aStarSolve, solver.weighted_manhattan)
+        else:
+            path = run_with_algo(solver.aStarSolve, solver.manhattan)
     '''
     for h in range(len(array)):
         for v in range(len(array[0])):

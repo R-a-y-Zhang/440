@@ -1,0 +1,69 @@
+\documentclass{article}
+\begin{document}
+\title{A-Star Project Summary}
+\author{Rui Zhang - rz187}
+\maketitle
+\section{Introduction}
+\subsection{Goal}
+Implement and visualize the A-star pathfinding algorithm and its derivatives,
+and write a program that was modular (or ``abstract''). Implement A-star with
+a variety of heuristics, both admissible and inadmissible.
+\subsection{Goals Achieved}
+\begin{enumerate}
+    \item Implemented A-star with the the Manhattan Heuristic and able to find
+        the most efficient path
+    \item Implemented a system for selectively choosing which A-star derivative
+        to use as well as grid size, size of obstacles, and the number of obstacles
+    \item Implemented a crude visualizer of the path that the program selected
+    \item Implemented all parts of the assignment (to the best of my understanding)
+    \item Implemented a variety of other heuristics that were either derivatives
+        of the manhattan heuristic
+\end{enumerate}
+\section{Heuristics}
+\begin{enumerate}
+    \item Manhattan
+    \item Uniform cost (value returned is always 0)
+    \item Weighted Manhattan (manhattan distance multiplied by a constant value (2))
+    \item Exponential
+    \item Square root
+\end{enumerate}
+\section{Optimizations}
+Very few optimizations were performed, if any. Beyond the use of a priority queue, for
+the open set since insertion is O(log n) and ability to perform heapify in O(log n) time,
+and using a set for the closed set since insertion and retrieval are both O(1), there
+were no other optimizations that I was aware of. In fact, everything was par-for-the-course,
+really. All algorithms were written as-is. Space complexity was also neglected, or not really
+considered since it was doubtful that the program would run out of space. The only
+``optimizations'' was the reduction of code complexity by modularizing a good number of parts
+of the program, thus reducing code complexity. Use of classes allowed for passing smaller
+groups of parameters to functions. Other than that, there is not a lot of optimizations done
+that I know of. The program ran in a reasonable amount of time and that was my benchmark.
+\section{Why It Was Efficient}
+\begin{enumerate}
+    \item A lot of these are language-specific (i.e. these optimizations are due to Python's nature)
+    \item Even though a lot of areas of the program could be simplified through the use of recursion,
+        vanilla Python is does not support TCO (Tail-Call Optimization) therefore, by resorting
+        to loops it eliminates exceeding the call stack.
+    \item Prioritizing arrays over objects reduces program overhead. Even a very simple object in
+        Python has a lot of overhead. Therefore, by using objects only when absolutely necessary,
+        it allowed for preserving main memory space.
+    \item List comprehensions in python have a speed advantage over other methods. Therefore,
+        by making use of it at various parts of the program it allowed for a faster implementation.
+    \item Keeping the number of parameters passed to each function allowed for the amount of global data
+        to be small by allowing a larger stack frame, which is not an issue since stack frames are
+        removed after a functionis completed.
+\end{enumerate}
+\section{Difficulties}
+\begin{enumerate}
+    \item The pseudocode provided was quite confusing, but that was most likely due to me
+        being unfamiliar with the set theory syntax
+    \item Python, with its large and expansive library unfortunately did not have a min-heap
+        implementation for objects so I had to write my own \footnote{There probably was but
+        I could not find it or I failed to grasp that it was meant for that purpose}
+    \item Unfortunately, I am not familiar with any visualization libraries that Python has to
+        offer (like pyplot or mathplotlib) or in any other langauge so I had to resort to
+        HTML/CSS (which is not my strong suit)
+    \item My partner never delivered on what he said he would which certainly slowed down
+        progress. In the end, I crammed as much as I could possibly do into it.
+\end{enumerate}
+\end{document}

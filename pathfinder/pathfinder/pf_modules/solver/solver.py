@@ -1,4 +1,4 @@
-from math import sqrt
+from math import sqrt, exp
 from . import datastore as DS
 
 class CNode:
@@ -27,8 +27,10 @@ def sum_tuples(t1, t2):
     return (t1[0]+t2[0], t1[1]+t2[1])
 
 # some heuristics
-def manhattan(c1, c2):
-    return abs(c1[0] - c2[0]) + abs(c1[1] + c2[1])
+def manhattan(c1, c2, output=False):
+    if output:
+        print(c1, c2, abs(c1[0] - c2[0]) + abs(c1[1] - c2[1]))
+    return abs(c1[0] - c2[0]) + abs(c1[1] - c2[1])
 
 def expManhattan(c1, c2):
     return pow(2, manhattan(c1, c2))
@@ -39,14 +41,19 @@ def sqrtManhattan(c1, c2):
 def crowFlies(c1, c2):
     return sqrt(pow(c1[0] + c2[0], 2) + pow(c1[1] + c2[1], 2))
 
-def solid(c1, c2):
-    return 0
-
 def uniform_cost(c1, c2):
     return 0
 
 def weighted_manhattan(c1, c2):
     return manhattan(c1, c2)*2
+
+def logistic(c1, c2):
+    w = c1[0]*c2[0]
+    h = c1[1]*c2[1]
+    wh = w*h
+    v = 10/(1+exp(-1*(1/2*manhattan(c1, c2)-10))) % wh
+    print(v)
+    return v
 
 def calculate_travel(c1, c2, c1v, c2v):
     deltaH = c1[0] - c2[0]
@@ -85,6 +92,7 @@ def aStarSolve(array, start, end, heuristic_fn): # checks out
     width = len(array[0])
     current = CNode(start, heuristic_fn(start, end), 0, None)
     openSet.insert(DS.Node(current, current.g+current.h))
+    print("STATE INFO INIT:", "S-SQUARE G", current.g, "S-SQUARE H", current.h)
     opens.add(current.c)
     while openSet.length > 0:
         node = openSet.pop()
@@ -99,6 +107,7 @@ def aStarSolve(array, start, end, heuristic_fn): # checks out
         for n in neighbors: # n, tuple of the coordinates of the neighbor
             if n == end:
                 nc = current
+                print("STATE INFO END:", "E-SQUARE G", nc.g, "E-SQUARE H", heuristic_fn(nc.c, end))
                 pathList = [nc.c]
                 while nc.p != None:
                     nc = nc.p
@@ -126,7 +135,6 @@ def aStarSolve(array, start, end, heuristic_fn): # checks out
                 nnode = CNode(n, heuristic_fn(start, n), tval, current)
                 openSet.insert(DS.Node(nnode, nnode.g+nnode.h))
                 opens.add(n)
-    print("NONE")
 
 def multiAStar(array, start, end, heuristics):
     height = len(array)

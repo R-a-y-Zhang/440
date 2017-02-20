@@ -32,6 +32,6 @@ $(function() {
     $('#confirm').click(function() {
         location.href="http://127.0.0.1:5000?height=" + $('#width').val() + "&width=" + $('#height').val()
                             + "&o_width=" + $('#o-width').val() + "&o_height=" + $("#o-height").val()
-                            + "&o_count=" + $("#o-count").val();
+                            + "&o_count=" + $("#o-count").val() + "&algo=" + $('#algo').val();
     });
 });
