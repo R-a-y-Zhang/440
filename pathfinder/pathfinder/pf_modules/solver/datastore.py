@@ -38,10 +38,10 @@ class Datastore:
             pi = int(ci / 2)
 
     def peek(self):
-        return self.heap[0] if self.length > 0 else None
+        return self.heap[1] if self.length > 0 else None
 
     def pop(self):
-        if self.length == 0:
+        if self.length <= 0:
             return None
         hold = self.heap[1]
         self.heap[1] = self.heap[self.length]

@@ -26,8 +26,21 @@ def in_bounds(array, c, bh, bw, v):
 def sum_tuples(t1, t2):
     return (t1[0]+t2[0], t1[1]+t2[1])
 
+# some heuristics
 def manhattan(c1, c2):
     return abs(c1[0] - c2[0]) + abs(c1[1] + c2[1])
+
+def expManhattan(c1, c2):
+    return pow(2, manhattan(c1, c2))
+
+def sqrtManhattan(c1, c2):
+    return sqrt(0.5*manhattan(c1, c2))
+
+def crowFlies(c1, c2):
+    return sqrt(pow(c1[0] + c2[0], 2) + pow(c1[1] + c2[1], 2))
+
+def solid(c1, c2):
+    return 0
 
 def uniform_cost(c1, c2):
     return 0
@@ -64,7 +77,7 @@ def find_min(openSet):
 
 neighborOffsets = [(1,0), (1,1), (0,1), (-1,0), (-1,1), (-1,-1), (1,-1), (0,-1)]
 
-def aStarSolve(array, start, end, heuristic_fn):
+def aStarSolve(array, start, end, heuristic_fn): # checks out
     openSet = DS.Datastore()
     opens = set()
     closedSet = set()
@@ -118,36 +131,47 @@ def aStarSolve(array, start, end, heuristic_fn):
 def multiAStar(array, start, end, heuristics):
     height = len(array)
     width = len(array[0])
-    heuristics.insert(manhattan, 0)
+    heuristics.insert(0, manhattan)
     openSets = []
     closedSets = []
     scell = start
+    heuristicsMarker = []
+    opencells = []
     for h in range(len(heuristics)):
-        openSet.append(DS.Datastore())
+        openSets.append(DS.Datastore())
         snode = CNode(start, heuristics[h](start, end), 0, None)
-        openSet[h].insert(snode)
+        openSets[h].insert(DS.Node(snode, snode.g+snode.h))
         closedSets.append(set())
+        heuristicsMarker.append(0)
+        opencells.append(set())
+        opencells[h].add(snode.c)
     nonZeros = len(openSets)
     baseVal = -1
     while nonZeros > 0:
         for i in range(len(openSets)):
             openSet = openSets[i]
+            opens = opencells[i]
             closedSet = closedSets[i]
-            if openSet.length <= 0:
-                nonZeros -= 1
+            if openSet.length <= 0: # openSet at i is empty, decrement counter
+                nonZeros -= (1 if openSet.length == 0 else 0)
+                openSet.length = -1
                 continue
             # peeks at the node to fetch, if the g+h value is less than that of the base heuristic, then
             # continue. else, wait until the next round.
             minnode = openSet.peek().data
             if i == 0:
                 baseVal = minnode.g + minnode.h
+                if 1 in heuristicsMarker: # if other heuristics are better, do not expand
+                    continue
             else:
-                if baseVal < 0:
+                if baseVal < 0: # should never happen
                     continue
                 # if heuristic is better than the base heurisitc, keep iterating over heuristics
                 elif baseVal < minnode.g+minnode.h: 
-                    i = 0
-                    continue
+                    heuristicsMarker[i] = 0
+                    continue # if baseVal is better than the heuristic, don't proceed with current heuristic
+                else:
+                    heuristicsMarker[i] = 1
             # continue if only h+g is better than the base heuristic or if is base heuristic.
             # Then just standard A* on it
             node = openSet.pop()
@@ -156,7 +180,7 @@ def multiAStar(array, start, end, heuristics):
             opens.remove(cc)
             closedSet.add(cc)
             if current.c is end:
-                return True
+                return True # this should also never happen
             neighbors = list(filter(lambda n: in_bounds(array, n, height, width, 3),
                 [sum_tuples(cc, n) for n in neighborOffsets]))
             for n in neighbors: # n, tuple of the coordinates of the neighbor
@@ -193,21 +217,26 @@ def multiAStar(array, start, end, heuristics):
 def multiAStarMultiQueue(array, start, end, heuristics):
     height = len(array)
     width = len(array[0])
-    heuristics.insert(manhattan, 0)
+    heuristics.insert(0, manhattan)
     openSets = []
-    opens = set()
-    closedSet = []
+    opens = []
+    closedSet = set()
     for i in range(len(heuristics)):
-        openSets.append(set())
+        openSets.append(DS.Datastore())
         snode = CNode(start, heuristics[i](start, end), 0, None)
-        openSets[i].insert(snode)
-        closedSet.append(start)
+        opens.append(set(start))
+        openSets[i].insert(DS.Node(snode, snode.g+snode.h))
+        closedSet.add(start)
     nonZeros = len(heuristics)
     while nonZeros > 0:
-        cExpand = None
         cExpandVal = -1
         tset = openSets[0]
+        ti = 0
         for i in range(len(openSets)):
+            if openSets[i].length <= 0:
+                nonZeros -= (1 if openSet.length == 0 else 0)
+                openSets[i].length = -1
+                continue
             pnode = openSets[i].peek().data
             if i == 0: # if is base heuristic, set that as cExpandVal
                 cExpandVal = pnode.g + pnode.h
@@ -215,8 +244,14 @@ def multiAStarMultiQueue(array, start, end, heuristics):
                 if pnode.g + pnode.h < cExpandVal: # if less than base heuristic, set IA as new expansion
                     cExpandVal = pnode.g + pnode.h
                     tset = openSets[i]
-        current = cExpand.pop().data
+                    ti = i
+        if openSets[ti].length <= 0:
+            return
+        current = tset.pop().data
         cc = current.c
+        closedSet.add(cc)
+        if cc in opens[ti]:
+            opens[ti].remove(cc)
         neighbors = list(filter(lambda n: in_bounds(array, n, height, width, 3),
             [sum_tuples(cc, n) for n in neighborOffsets]))
         for n in neighbors:
@@ -225,20 +260,22 @@ def multiAStarMultiQueue(array, start, end, heuristics):
                 pathList = [nc.c]
                 while nc.p != None:
                     nc = nc.p
-                    pathList.insert(0, nc.c[0], nc.c[1]])
+                    pathList.insert(0, [nc.c[0], nc.c[1]])
                 pathList.append(end)
                 return pathList
             if n in closedSet:
                 continue
             for i in range(len(openSets)):
                 tval = current.g + calculate_travel(cc, n, array[cc[0]][cc[1]], array[n[0]][n[1]])
-                if n in opens:
+                if n in opens[i]:
                     ind = -1
                     openSet = openSets[i]
                     for j in range(1, openSet.length+1):
                         if openSet.heap[j].data.c[0] == n[0] and openSet.heap[j].data.c[1] == n[1]:
                             ind = j
                             break
+                    if ind == -1:
+                        break
                     nodeTup = openSet.heap[ind]
                     nnode = nodeTup.data
                     if tval < nnode.g:
@@ -247,5 +284,5 @@ def multiAStarMultiQueue(array, start, end, heuristics):
                         nodeTup.value = nnode.g + nnode.h
                 else:
                     nnode = CNode(n, heuristics[i](start, n), tval, current)
-                    openSet.insert(DS.Node(nnode, nnode.g+nnode.h))
-                    opens.add(n)
+                    tset.insert(DS.Node(nnode, nnode.g+nnode.h))
+                    opens[i].add(n)

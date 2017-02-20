@@ -41,7 +41,8 @@ def run():
     r2_w = rand.randint(w-10, w-1)
     r2_h = rand.randint(h-10, h-1)
     print("END", r2_h, r2_w)
-    path = solver.aStarSolve(array, (r1_h, r1_w), (r2_h, r2_w), solver.manhattan)
+    path = solver.multiAStarMultiQueue(array, (r1_h, r1_w), (r2_h, r2_w),
+            [solver.expManhattan, solver.solid, solver.sqrtManhattan])
     '''
     for h in range(len(array)):
         for v in range(len(array[0])):
