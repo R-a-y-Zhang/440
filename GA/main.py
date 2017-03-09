@@ -1,4 +1,5 @@
 import random, sys
+import os
 
 var = [False, True]
 class Cnf3:
@@ -101,10 +102,16 @@ class Cnf_group:
         for i in range(1, self.varlen+1):
             sys.stdout.write("x_{} {} ".format(i, 'T' if self.vars[i] else 'F'))
         print()
-
+'''
 cnf = Cnf_group(30, 30)
 cnf.random_populate_cnfs()
 cnf.populate_vars()
 cnf.output_cnfs()
 cnf.output_vars()
 print(cnf.get_result())
+'''
+
+path = sys.argv[1]
+if os.path.isdir(path):
+
+elif os.path.isfile(path):
